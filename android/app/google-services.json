@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "398631636734",
+    "project_id": "university-report-application",
+    "storage_bucket": "university-report-application.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398631636734:android:4e7f1a8b22db0c65b89faf",
+        "android_client_info": {
+          "package_name": "com.example.my_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDf0VOmlMJocrHPBFILOse_eVyq5oyw6NI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
