@@ -1,0 +1,8 @@
+{
+  "welcome": "Welcome, User!",
+  "select_issue": "Please select where the issue is:",
+  "recent_reports": "Recent Reports",
+  "language": "Language",
+  "logout": "Log Out",
+  "view_tickets": "View Ticket History"
+}
