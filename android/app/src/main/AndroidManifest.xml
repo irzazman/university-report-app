@@ -6,10 +6,8 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <!-- For Android 11+ package visibility -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" 
-        tools:ignore="QueryAllPackagesPermission" />
-
-    <application
-        android:label="my_app"
+        tools:ignore="QueryAllPackagesPermission" />    <application
+        android:label="University Report App"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

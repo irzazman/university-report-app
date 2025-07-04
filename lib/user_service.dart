@@ -102,12 +102,17 @@ class UserService {
         throw Exception('No user logged in');
       }
 
+      print(
+          "Storing user with phone: $countryCode$phoneNumber (separate fields: countryCode=$countryCode, phoneNumber=$phoneNumber)");
+
       await _firestore.collection('users').doc(user.uid).set({
         'uid': user.uid,
         'email': user.email,
         'role': roleToString(role),
         'phoneNumber': phoneNumber,
         'countryCode': countryCode,
+        'fullPhoneNumber':
+            '$countryCode$phoneNumber', // Store both for flexibility
         'createdAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {

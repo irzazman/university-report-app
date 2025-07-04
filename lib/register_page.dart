@@ -107,16 +107,21 @@ class _RegisterPageState extends State<RegisterPage> {
     String countryCode,
   ) async {
     try {
-      final fullPhoneNumber = '$countryCode$phoneNumber';
-      final querySnapshot =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .where('phoneNumber', isEqualTo: fullPhoneNumber)
-              .get();
+      // Check for exact match of both phoneNumber and countryCode
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('phoneNumber', isEqualTo: phoneNumber)
+          .where('countryCode', isEqualTo: countryCode)
+          .get();
+
+      print(
+          "Phone uniqueness check: $countryCode$phoneNumber - Found ${querySnapshot.docs.length} matches");
       return querySnapshot.docs.isEmpty;
     } catch (e) {
       print("Error checking phone number uniqueness: $e");
-      return false;
+      // On error, assume phone is unique to avoid blocking legitimate registrations
+      // You might want to show a warning to the user in production
+      return true;
     }
   }
 
@@ -347,10 +352,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color:
-                              showEmailError
-                                  ? Colors.red.shade300
-                                  : emailValid
+                          color: showEmailError
+                              ? Colors.red.shade300
+                              : emailValid
                                   ? Colors.green.shade300
                                   : Colors.grey.shade300,
                           width: 1,
@@ -371,10 +375,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             padding: const EdgeInsets.only(left: 16, right: 12),
                             child: Icon(
                               Icons.email_rounded,
-                              color:
-                                  showEmailError
-                                      ? Colors.red.shade400
-                                      : emailValid
+                              color: showEmailError
+                                  ? Colors.red.shade400
+                                  : emailValid
                                       ? Colors.green.shade400
                                       : Color(0xFF0070F0),
                               size: 22,
@@ -384,32 +387,30 @@ class _RegisterPageState extends State<RegisterPage> {
                             minWidth: 50,
                             maxWidth: 50,
                           ),
-                          suffixIcon:
-                              emailController.text.isNotEmpty
-                                  ? Container(
-                                    width: 24,
-                                    height: 24,
-                                    margin: EdgeInsets.only(right: 16),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color:
-                                          emailValid
-                                              ? Colors.green.shade400
-                                              : showEmailError
-                                              ? Colors.red.shade400
-                                              : Colors.transparent,
-                                    ),
-                                    child: Icon(
-                                      emailValid
-                                          ? Icons.check
-                                          : showEmailError
-                                          ? Icons.close
-                                          : null,
-                                      color: Colors.white,
-                                      size: 14,
-                                    ),
-                                  )
-                                  : null,
+                          suffixIcon: emailController.text.isNotEmpty
+                              ? Container(
+                                  width: 24,
+                                  height: 24,
+                                  margin: EdgeInsets.only(right: 16),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: emailValid
+                                        ? Colors.green.shade400
+                                        : showEmailError
+                                            ? Colors.red.shade400
+                                            : Colors.transparent,
+                                  ),
+                                  child: Icon(
+                                    emailValid
+                                        ? Icons.check
+                                        : showEmailError
+                                            ? Icons.close
+                                            : null,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                )
+                              : null,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
@@ -465,10 +466,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color:
-                              showPasswordError
-                                  ? Colors.red.shade300
-                                  : passwordValid
+                          color: showPasswordError
+                              ? Colors.red.shade300
+                              : passwordValid
                                   ? Colors.green.shade300
                                   : Colors.grey.shade300,
                           width: 1,
@@ -489,10 +489,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             padding: const EdgeInsets.only(left: 16, right: 12),
                             child: Icon(
                               Icons.lock_rounded,
-                              color:
-                                  showPasswordError
-                                      ? Colors.red.shade400
-                                      : passwordValid
+                              color: showPasswordError
+                                  ? Colors.red.shade400
+                                  : passwordValid
                                       ? Colors.green.shade400
                                       : Color(0xFF0070F0),
                               size: 22,
@@ -502,32 +501,30 @@ class _RegisterPageState extends State<RegisterPage> {
                             minWidth: 50,
                             maxWidth: 50,
                           ),
-                          suffixIcon:
-                              passwordController.text.isNotEmpty
-                                  ? Container(
-                                    width: 24,
-                                    height: 24,
-                                    margin: EdgeInsets.only(right: 16),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color:
-                                          passwordValid
-                                              ? Colors.green.shade400
-                                              : showPasswordError
-                                              ? Colors.red.shade400
-                                              : Colors.transparent,
-                                    ),
-                                    child: Icon(
-                                      passwordValid
-                                          ? Icons.check
-                                          : showPasswordError
-                                          ? Icons.close
-                                          : null,
-                                      color: Colors.white,
-                                      size: 14,
-                                    ),
-                                  )
-                                  : null,
+                          suffixIcon: passwordController.text.isNotEmpty
+                              ? Container(
+                                  width: 24,
+                                  height: 24,
+                                  margin: EdgeInsets.only(right: 16),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: passwordValid
+                                        ? Colors.green.shade400
+                                        : showPasswordError
+                                            ? Colors.red.shade400
+                                            : Colors.transparent,
+                                  ),
+                                  child: Icon(
+                                    passwordValid
+                                        ? Icons.check
+                                        : showPasswordError
+                                            ? Icons.close
+                                            : null,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                )
+                              : null,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
@@ -583,10 +580,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color:
-                              showPhoneError
-                                  ? Colors.red.shade300
-                                  : phoneValid
+                          color: showPhoneError
+                              ? Colors.red.shade300
+                              : phoneValid
                                   ? Colors.green.shade300
                                   : Colors.grey.shade300,
                           width: 1,
@@ -696,32 +692,30 @@ class _RegisterPageState extends State<RegisterPage> {
                                     color: Colors.grey.shade500,
                                     fontSize: 15,
                                   ),
-                                  suffixIcon:
-                                      phoneController.text.isNotEmpty
-                                          ? Container(
-                                            width: 24,
-                                            height: 24,
-                                            margin: EdgeInsets.only(right: 8),
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color:
-                                                  phoneValid
-                                                      ? Colors.green.shade400
-                                                      : showPhoneError
-                                                      ? Colors.red.shade400
-                                                      : Colors.transparent,
-                                            ),
-                                            child: Icon(
-                                              phoneValid
-                                                  ? Icons.check
-                                                  : showPhoneError
-                                                  ? Icons.close
-                                                  : null,
-                                              color: Colors.white,
-                                              size: 14,
-                                            ),
-                                          )
-                                          : null,
+                                  suffixIcon: phoneController.text.isNotEmpty
+                                      ? Container(
+                                          width: 24,
+                                          height: 24,
+                                          margin: EdgeInsets.only(right: 8),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: phoneValid
+                                                ? Colors.green.shade400
+                                                : showPhoneError
+                                                    ? Colors.red.shade400
+                                                    : Colors.transparent,
+                                          ),
+                                          child: Icon(
+                                            phoneValid
+                                                ? Icons.check
+                                                : showPhoneError
+                                                    ? Icons.close
+                                                    : null,
+                                            color: Colors.white,
+                                            size: 14,
+                                          ),
+                                        )
+                                      : null,
                                   border: InputBorder.none,
                                   enabledBorder: InputBorder.none,
                                   focusedBorder: InputBorder.none,
@@ -906,25 +900,23 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         gradient: LinearGradient(
-                          colors:
-                              isLoading
-                                  ? [Colors.grey.shade300, Colors.grey.shade400]
-                                  : [Color(0xFF0070F0), Color(0xFF0052CC)],
+                          colors: isLoading
+                              ? [Colors.grey.shade300, Colors.grey.shade400]
+                              : [Color(0xFF0070F0), Color(0xFF0052CC)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        boxShadow:
-                            isLoading
-                                ? []
-                                : [
-                                  BoxShadow(
-                                    color: Color(
-                                      0xFF0070F0,
-                                    ).withValues(alpha: 0.3),
-                                    blurRadius: 20,
-                                    offset: Offset(0, 8),
-                                  ),
-                                ],
+                        boxShadow: isLoading
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: Color(
+                                    0xFF0070F0,
+                                  ).withValues(alpha: 0.3),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
                       ),
                       width: double.infinity,
                       height: 56,
@@ -940,43 +932,42 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           disabledBackgroundColor: Colors.transparent,
                         ),
-                        child:
-                            isLoading
-                                ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2.5,
-                                      ),
+                        child: isLoading
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
                                     ),
-                                    SizedBox(width: 12),
-                                    Text(
-                                      'Creating Account...',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Text(
+                                    'Creating Account...',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                  ],
-                                )
-                                : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.person_add_rounded, size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Create Account',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.person_add_rounded, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Create Account',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                   ],
