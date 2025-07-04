@@ -2,7 +2,7 @@
 
 <p align="center">
   <!-- Replace 'logo.png' with your logo file when available -->
-  <img src="logo.png" alt="UTeM Reporter Logo" width="120" />
+  <img src="assets/images/logo.png" alt="UTeM Reporter Logo" width="120" />
 </p>
 
 [![License](https://img.shields.io/github/license/irzazman/university-report-app)](LICENSE)
@@ -72,12 +72,6 @@
 5. Pinpoint the issue location on the map.
 6. Add a photo and description.
 7. Submit your report and track its status.
-
----
-
-## License
-
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 
