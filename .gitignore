@@ -46,3 +46,6 @@ app.*.map.json
 
 # Nested repository
 university-report-app/
+
+# Ignore local.properties for Android API keys and secrets
+android/local.properties
