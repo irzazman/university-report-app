@@ -8,6 +8,9 @@ import 'staff_report_detail_page.dart';
 import 'staff_review_detail_page.dart';
 import 'auth_token_service.dart';
 import 'session_manager.dart';
+import 'notifications_page.dart';
+import 'notification_badge.dart';
+import 'notification_settings_page.dart';
 
 class StaffHomePage extends StatelessWidget {
   const StaffHomePage({super.key});
@@ -97,6 +100,21 @@ class StaffHomePage extends StatelessWidget {
                               },
                               activeColor: theme.colorScheme.primary,
                             ),
+                          ),
+
+                          // Notification Settings option
+                          _ModernSettingsOption(
+                            icon: Icons.notifications_outlined,
+                            label: "notification_settings.title".tr(),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const NotificationSettingsPage(),
+                                ),
+                              );
+                            },
                           ),
 
                           const Divider(indent: 56, endIndent: 20),
@@ -229,6 +247,24 @@ class StaffHomePage extends StatelessWidget {
                               ],
                             ),
                           ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: NotificationIconButton(
+                              icon: Icons.notifications_outlined,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const NotificationsPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
