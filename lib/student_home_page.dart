@@ -10,6 +10,7 @@ import 'ticket_history_page.dart';
 import 'session_manager.dart';
 import 'notifications_page.dart';
 import 'notification_badge.dart';
+import 'notification_settings_page.dart';
 
 class StudentHomePage extends StatelessWidget {
   const StudentHomePage({super.key});
@@ -98,7 +99,24 @@ class StudentHomePage extends StatelessWidget {
                                 ),
                               );
                             },
-                          ), // Language option
+                          ),
+
+                          // Notification Settings option
+                          _ModernSettingsOption(
+                            icon: Icons.notifications_outlined,
+                            label: "notification_settings.title".tr(),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const NotificationSettingsPage(),
+                                ),
+                              );
+                            },
+                          ),
+
+                          // Language option
                           _ModernSettingsOption(
                             icon: Icons.language_rounded,
                             label: "language".tr(),
