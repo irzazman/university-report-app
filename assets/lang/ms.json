@@ -4,5 +4,30 @@
   "recent_reports": "Laporan Terkini",
   "language": "Bahasa",
   "logout": "Log Keluar",
-  "view_tickets": "Lihat Sejarah Tiket"
+  "view_tickets": "Lihat Sejarah Tiket",
+  "notifications": {
+    "title": "Notifikasi",
+    "empty": "Tiada notifikasi lagi",
+    "error": "Tidak dapat memuatkan notifikasi",
+    "mark_all_read": "Tandakan semua sebagai dibaca",
+    "mark_read": "Tandakan sebagai dibaca",
+    "delete": "Padam",
+    "delete_confirmation_title": "Padam Notifikasi",
+    "delete_confirmation_message": "Adakah anda pasti ingin memadam notifikasi ini?",
+    "marked_read": "Notifikasi ditandakan sebagai dibaca",
+    "all_marked_read": "Semua notifikasi ditandakan sebagai dibaca",
+    "deleted": "Notifikasi dipadam",
+    "report_submitted": "Laporan Dihantar",
+    "report_reviewed": "Laporan Sedang Dikaji",
+    "report_completed": "Laporan Selesai",
+    "report_assigned": "Laporan Baru Ditugaskan",
+    "system_announcement": "Pengumuman Sistem"
+  },
+  "common": {
+    "cancel": "Batal",
+    "delete": "Padam",
+    "ok": "OK",
+    "save": "Simpan",
+    "close": "Tutup"
+  }
 }

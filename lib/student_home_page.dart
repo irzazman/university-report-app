@@ -8,6 +8,8 @@ import 'report_page.dart';
 import 'student_report_detail_page.dart';
 import 'ticket_history_page.dart';
 import 'session_manager.dart';
+import 'notifications_page.dart';
+import 'notification_badge.dart';
 
 class StudentHomePage extends StatelessWidget {
   const StudentHomePage({super.key});
@@ -225,6 +227,24 @@ class StudentHomePage extends StatelessWidget {
                               ],
                             ),
                           ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: NotificationIconButton(
+                              icon: Icons.notifications_outlined,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const NotificationsPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),

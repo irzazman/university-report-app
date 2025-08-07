@@ -10,9 +10,12 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import 'api_service.dart';
 import 'user_service.dart';
+import 'notification_service.dart';
+import 'notification_model.dart';
 
 class ReportPage extends StatefulWidget {
   final String category;
@@ -370,6 +373,22 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
       // Update the same document with its auto-generated ID
       await docRef.update({'reportId': docRef.id});
 
+      // Create notification for the user who submitted the report
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await NotificationService().createNotification(
+          title: 'notifications.report_submitted'.tr(),
+          message: 'Your ${widget.category.toLowerCase()} report has been submitted successfully.',
+          type: NotificationType.reportSubmitted,
+          userId: user.uid,
+          reportId: docRef.id,
+          priority: NotificationPriority.normal,
+        );
+
+        // Create notification for staff members about new report
+        await _notifyStaffAboutNewReport(docRef.id, widget.category);
+      }
+
       setState(() {
         _descriptionController.clear();
         _floorController.clear();
@@ -471,6 +490,35 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
           ),
         );
       }
+    }
+  }
+
+  // Helper method to notify staff about new reports
+  Future<void> _notifyStaffAboutNewReport(String reportId, String category) async {
+    try {
+      // Get all staff users
+      final staffUsersSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('role', isEqualTo: 'staff')
+          .get();
+
+      // Create notifications for each staff member
+      for (var staffDoc in staffUsersSnapshot.docs) {
+        await NotificationService().createNotification(
+          title: 'notifications.report_assigned'.tr(),
+          message: 'New $category report assigned for review.',
+          type: NotificationType.reportAssigned,
+          userId: staffDoc.id,
+          reportId: reportId,
+          priority: NotificationPriority.high,
+          data: {
+            'category': category,
+            'reportId': reportId,
+          },
+        );
+      }
+    } catch (e) {
+      debugPrint('Error notifying staff about new report: $e');
     }
   }
 

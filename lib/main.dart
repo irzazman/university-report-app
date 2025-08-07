@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'welcome_page.dart';
 import 'dart:async';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'notification_service.dart';
 
 // Make sure to import this
 
@@ -21,6 +22,9 @@ void main() async {
     // In production, use:
     // androidProvider: AndroidProvider.playIntegrity,
   );
+
+  // Initialize notification service
+  await NotificationService().initialize();
 
   await EasyLocalization.ensureInitialized();
   runApp(

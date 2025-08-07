@@ -4,5 +4,30 @@
   "recent_reports": "Recent Reports",
   "language": "Language",
   "logout": "Log Out",
-  "view_tickets": "View Ticket History"
+  "view_tickets": "View Ticket History",
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "error": "Unable to load notifications",
+    "mark_all_read": "Mark all as read",
+    "mark_read": "Mark as read",
+    "delete": "Delete",
+    "delete_confirmation_title": "Delete Notification",
+    "delete_confirmation_message": "Are you sure you want to delete this notification?",
+    "marked_read": "Notification marked as read",
+    "all_marked_read": "All notifications marked as read",
+    "deleted": "Notification deleted",
+    "report_submitted": "Report Submitted",
+    "report_reviewed": "Report Under Review",
+    "report_completed": "Report Completed",
+    "report_assigned": "New Report Assigned",
+    "system_announcement": "System Announcement"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "ok": "OK",
+    "save": "Save",
+    "close": "Close"
+  }
 }
