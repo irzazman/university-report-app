@@ -22,7 +22,8 @@ class ReportStatusHelper {
       if (user == null) throw Exception('No user logged in');
 
       // Get the report data first to know who to notify
-      final reportDoc = await _firestore.collection('reports').doc(reportId).get();
+      final reportDoc =
+          await _firestore.collection('reports').doc(reportId).get();
       if (!reportDoc.exists) throw Exception('Report not found');
 
       final reportData = reportDoc.data() as Map<String, dynamic>;
@@ -102,7 +103,7 @@ class ReportStatusHelper {
       }
 
       final studentUserId = userSnapshot.docs.first.id;
-      
+
       // Determine notification type and message based on status
       NotificationType notificationType;
       String title;
@@ -123,12 +124,14 @@ class ReportStatusHelper {
         case 'completed':
           notificationType = NotificationType.reportCompleted;
           title = 'notifications.report_completed'.tr();
-          message = 'Your $category report has been resolved. Thank you for your patience!';
+          message =
+              'Your $category report has been resolved. Thank you for your patience!';
           break;
         default:
           notificationType = NotificationType.systemAnnouncement;
           title = 'Report Status Updated';
-          message = 'Your $category report status has been updated to: $newStatus';
+          message =
+              'Your $category report status has been updated to: $newStatus';
       }
 
       // Create the notification
@@ -137,6 +140,7 @@ class ReportStatusHelper {
         message: message,
         type: notificationType,
         userId: studentUserId,
+        assignedTo: studentUserId,
         reportId: reportId,
         priority: NotificationPriority.normal,
         data: {

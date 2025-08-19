@@ -23,9 +23,12 @@ class NotificationTestUtils {
 
       await _notificationService.createNotification(
         title: 'Test Notification',
-        message: 'This is a test notification to verify the notification system is working properly.',
+        message:
+            'This is a test notification to verify the notification system is working properly.',
         type: type,
         userId: user.uid,
+        reportId: null,
+        assignedTo: user.uid,
         priority: priority,
         data: {
           'isTest': true,
@@ -52,7 +55,8 @@ class NotificationTestUtils {
         {
           'type': NotificationType.reportSubmitted,
           'title': 'Report Submitted Successfully',
-          'message': 'Your campus report has been submitted and is being processed.',
+          'message':
+              'Your campus report has been submitted and is being processed.',
           'priority': NotificationPriority.normal,
         },
         {
@@ -76,7 +80,8 @@ class NotificationTestUtils {
         {
           'type': NotificationType.systemAnnouncement,
           'title': 'System Maintenance',
-          'message': 'The system will undergo maintenance tonight from 12AM to 3AM.',
+          'message':
+              'The system will undergo maintenance tonight from 12AM to 3AM.',
           'priority': NotificationPriority.urgent,
         },
       ];
@@ -87,6 +92,8 @@ class NotificationTestUtils {
           message: notification['message'] as String,
           type: notification['type'] as NotificationType,
           userId: user.uid,
+          reportId: null,
+          assignedTo: user.uid,
           priority: notification['priority'] as NotificationPriority,
           data: {
             'isTest': true,

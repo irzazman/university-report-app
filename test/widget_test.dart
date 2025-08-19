@@ -22,6 +22,7 @@ void main() {
         priority: NotificationPriority.normal,
         userId: 'user-123',
         reportId: 'report-456',
+        assignedTo: 'user-123',
         createdAt: DateTime.now(),
         isRead: false,
       );
@@ -38,57 +39,72 @@ void main() {
     });
 
     test('NotificationType icons test', () {
-      expect(NotificationModel(
-        id: '',
-        title: '',
-        message: '',
-        type: NotificationType.reportSubmitted,
-        priority: NotificationPriority.normal,
-        userId: '',
-        createdAt: DateTime.now(),
-      ).icon, equals('📝'));
+      expect(
+          NotificationModel(
+            id: '',
+            title: '',
+            message: '',
+            type: NotificationType.reportSubmitted,
+            priority: NotificationPriority.normal,
+            userId: '',
+            assignedTo: '',
+            createdAt: DateTime.now(),
+          ).icon,
+          equals('📝'));
 
-      expect(NotificationModel(
-        id: '',
-        title: '',
-        message: '',
-        type: NotificationType.reportReviewed,
-        priority: NotificationPriority.normal,
-        userId: '',
-        createdAt: DateTime.now(),
-      ).icon, equals('👀'));
+      expect(
+          NotificationModel(
+            id: '',
+            title: '',
+            message: '',
+            type: NotificationType.reportReviewed,
+            priority: NotificationPriority.normal,
+            userId: '',
+            assignedTo: '',
+            createdAt: DateTime.now(),
+          ).icon,
+          equals('👀'));
 
-      expect(NotificationModel(
-        id: '',
-        title: '',
-        message: '',
-        type: NotificationType.reportCompleted,
-        priority: NotificationPriority.normal,
-        userId: '',
-        createdAt: DateTime.now(),
-      ).icon, equals('✅'));
+      expect(
+          NotificationModel(
+            id: '',
+            title: '',
+            message: '',
+            type: NotificationType.reportCompleted,
+            priority: NotificationPriority.normal,
+            userId: '',
+            assignedTo: '',
+            createdAt: DateTime.now(),
+          ).icon,
+          equals('✅'));
     });
 
     test('NotificationPriority colors test', () {
-      expect(NotificationModel(
-        id: '',
-        title: '',
-        message: '',
-        type: NotificationType.systemAnnouncement,
-        priority: NotificationPriority.low,
-        userId: '',
-        createdAt: DateTime.now(),
-      ).priorityColor, equals('#64748B'));
+      expect(
+          NotificationModel(
+            id: '',
+            title: '',
+            message: '',
+            type: NotificationType.systemAnnouncement,
+            priority: NotificationPriority.low,
+            userId: '',
+            assignedTo: '',
+            createdAt: DateTime.now(),
+          ).priorityColor,
+          equals('#64748B'));
 
-      expect(NotificationModel(
-        id: '',
-        title: '',
-        message: '',
-        type: NotificationType.systemAnnouncement,
-        priority: NotificationPriority.urgent,
-        userId: '',
-        createdAt: DateTime.now(),
-      ).priorityColor, equals('#EF4444'));
+      expect(
+          NotificationModel(
+            id: '',
+            title: '',
+            message: '',
+            type: NotificationType.systemAnnouncement,
+            priority: NotificationPriority.urgent,
+            userId: '',
+            assignedTo: '',
+            createdAt: DateTime.now(),
+          ).priorityColor,
+          equals('#EF4444'));
     });
   });
 

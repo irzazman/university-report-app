@@ -23,6 +23,7 @@ class NotificationModel {
   final NotificationPriority priority;
   final String userId;
   final String? reportId;
+  final String assignedTo;
   final DateTime createdAt;
   final bool isRead;
   final Map<String, dynamic>? data;
@@ -35,6 +36,7 @@ class NotificationModel {
     required this.priority,
     required this.userId,
     this.reportId,
+    required this.assignedTo,
     required this.createdAt,
     this.isRead = false,
     this.data,
@@ -57,6 +59,7 @@ class NotificationModel {
       ),
       userId: data['userId'] ?? '',
       reportId: data['reportId'],
+      assignedTo: data['assignedTo'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       isRead: data['isRead'] ?? false,
       data: data['data'] as Map<String, dynamic>?,
@@ -72,6 +75,7 @@ class NotificationModel {
       'priority': priority.toString().split('.').last,
       'userId': userId,
       'reportId': reportId,
+      'assignedTo': assignedTo,
       'createdAt': FieldValue.serverTimestamp(),
       'isRead': isRead,
       'data': data,
@@ -87,6 +91,7 @@ class NotificationModel {
     NotificationPriority? priority,
     String? userId,
     String? reportId,
+    String? assignedTo,
     DateTime? createdAt,
     bool? isRead,
     Map<String, dynamic>? data,
@@ -99,6 +104,7 @@ class NotificationModel {
       priority: priority ?? this.priority,
       userId: userId ?? this.userId,
       reportId: reportId ?? this.reportId,
+      assignedTo: assignedTo ?? this.assignedTo,
       createdAt: createdAt ?? this.createdAt,
       isRead: isRead ?? this.isRead,
       data: data ?? this.data,

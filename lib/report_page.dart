@@ -313,8 +313,8 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
       if (_image != null) {
         final fileName = const Uuid().v4();
         final storageRef = FirebaseStorage.instance.ref().child(
-          'reports/$fileName.jpg',
-        );
+              'reports/$fileName.jpg',
+            );
 
         UploadTask uploadTask = storageRef.putFile(_image!);
         uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
@@ -374,19 +374,22 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
       await docRef.update({'reportId': docRef.id});
 
       // Create notification for the user who submitted the report
-      final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        // Notify the student who submitted the report. assignedTo is the student uid
         await NotificationService().createNotification(
           title: 'notifications.report_submitted'.tr(),
-          message: 'Your ${widget.category.toLowerCase()} report has been submitted successfully.',
+          message:
+              'Your ${widget.category.toLowerCase()} report has been submitted successfully.',
           type: NotificationType.reportSubmitted,
           userId: user.uid,
+          assignedTo: user.uid,
           reportId: docRef.id,
           priority: NotificationPriority.normal,
         );
 
-        // Create notification for staff members about new report
-        await _notifyStaffAboutNewReport(docRef.id, widget.category);
+        // Do NOT broadcast new-report notifications to all staff here.
+        // Staff should only receive notifications when an admin assigns the report
+        // to a specific maintenance staff (admin web dashboard will handle that).
       }
 
       setState(() {
@@ -493,34 +496,7 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
     }
   }
 
-  // Helper method to notify staff about new reports
-  Future<void> _notifyStaffAboutNewReport(String reportId, String category) async {
-    try {
-      // Get all staff users
-      final staffUsersSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('role', isEqualTo: 'staff')
-          .get();
-
-      // Create notifications for each staff member
-      for (var staffDoc in staffUsersSnapshot.docs) {
-        await NotificationService().createNotification(
-          title: 'notifications.report_assigned'.tr(),
-          message: 'New $category report assigned for review.',
-          type: NotificationType.reportAssigned,
-          userId: staffDoc.id,
-          reportId: reportId,
-          priority: NotificationPriority.high,
-          data: {
-            'category': category,
-            'reportId': reportId,
-          },
-        );
-      }
-    } catch (e) {
-      debugPrint('Error notifying staff about new report: $e');
-    }
-  }
+  // _notifyStaffAboutNewReport removed: admin assignment should create targeted notifications
 
   bool _validateForm() {
     // Check description is not empty
@@ -589,14 +565,12 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
       if (_selectedCollege == null ||
           _selectedBlock == null ||
           _selectedFloor == null ||
-          _selectedRoom == null)
-        return false;
+          _selectedRoom == null) return false;
       if (_selectedCollege != 'Lestari' && _selectedHouse == null) return false;
     } else if (widget.category == 'Faculty') {
       if (_selectedFaculty == null ||
           _selectedFloor == null ||
-          _roomController.text.trim().isEmpty)
-        return false;
+          _roomController.text.trim().isEmpty) return false;
     }
 
     return true;
@@ -762,9 +736,9 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
                                           child: GoogleMap(
                                             initialCameraPosition:
                                                 CameraPosition(
-                                                  target: _pinLocation,
-                                                  zoom: 17,
-                                                ),
+                                              target: _pinLocation,
+                                              zoom: 17,
+                                            ),
                                             onMapCreated: (controller) {
                                               _mapController = controller;
                                               _mapController?.animateCamera(
@@ -955,8 +929,8 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
                                     backgroundColor: Colors.grey.shade300,
                                     valueColor:
                                         const AlwaysStoppedAnimation<Color>(
-                                          Color(0xFF0070F0),
-                                        ),
+                                      Color(0xFF0070F0),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -980,10 +954,9 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
                             width: double.infinity,
                             height: 56,
                             child: ElevatedButton(
-                              onPressed:
-                                  (_isSubmitting || !_isFormValid)
-                                      ? null
-                                      : _submitReport,
+                              onPressed: (_isSubmitting || !_isFormValid)
+                                  ? null
+                                  : _submitReport,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
                                     (_isSubmitting || !_isFormValid)
@@ -996,23 +969,22 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
                                 elevation:
                                     (_isSubmitting || !_isFormValid) ? 0 : 2,
                               ),
-                              child:
-                                  _isSubmitting
-                                      ? const SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                      : const Text(
-                                        'Submit Report',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                              child: _isSubmitting
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
                                       ),
+                                    )
+                                  : const Text(
+                                      'Submit Report',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                             ),
                           ),
                         );
@@ -1056,21 +1028,20 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
       ),
       child: DropdownButtonFormField<T>(
         value: value,
-        items:
-            items
-                .map(
-                  (item) => DropdownMenuItem(
-                    value: item,
-                    child: Text(
-                      item.toString(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF1E293B),
-                      ),
-                    ),
+        items: items
+            .map(
+              (item) => DropdownMenuItem(
+                value: item,
+                child: Text(
+                  item.toString(),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF1E293B),
                   ),
-                )
-                .toList(),
+                ),
+              ),
+            )
+            .toList(),
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,
@@ -1125,12 +1096,11 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
                 color: const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color:
-                      _predictedType == 'Predicting...'
-                          ? Colors.orange.withAlpha(77) // Fixed withOpacity
-                          : const Color(
-                            0xFF0070F0,
-                          ).withAlpha(77), // Fixed withOpacity
+                  color: _predictedType == 'Predicting...'
+                      ? Colors.orange.withAlpha(77) // Fixed withOpacity
+                      : const Color(
+                          0xFF0070F0,
+                        ).withAlpha(77), // Fixed withOpacity
                   width: 1,
                 ),
               ),
@@ -1141,31 +1111,29 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color:
-                          _predictedType == 'Predicting...'
-                              ? Colors.orange.withAlpha(26) // Fixed withOpacity
-                              : const Color(
-                                0xFF0070F0,
-                              ).withAlpha(26), // Fixed withOpacity
+                      color: _predictedType == 'Predicting...'
+                          ? Colors.orange.withAlpha(26) // Fixed withOpacity
+                          : const Color(
+                              0xFF0070F0,
+                            ).withAlpha(26), // Fixed withOpacity
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child:
-                        _predictedType == 'Predicting...'
-                            ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.orange,
-                                ),
+                    child: _predictedType == 'Predicting...'
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.orange,
                               ),
-                            )
-                            : const Icon(
-                              Icons.auto_awesome_rounded,
-                              color: Color(0xFF0070F0),
-                              size: 20,
                             ),
+                          )
+                        : const Icon(
+                            Icons.auto_awesome_rounded,
+                            color: Color(0xFF0070F0),
+                            size: 20,
+                          ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -1197,8 +1165,8 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
                   ),
                   if (_predictedType != 'Predicting...')
                     TextButton(
-                      onPressed:
-                          () => setState(() => _isCategoryEditable = true),
+                      onPressed: () =>
+                          setState(() => _isCategoryEditable = true),
                       style: TextButton.styleFrom(
                         foregroundColor: const Color(0xFF0070F0),
                         textStyle: const TextStyle(fontWeight: FontWeight.w500),

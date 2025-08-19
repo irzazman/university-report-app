@@ -1,12 +1,20 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+// flutter imports intentionally reduced to keep this service UI-agnostic
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'notification_model.dart';
+
+// Top-level background message handler required by firebase_messaging
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  try {
+    await Firebase.initializeApp();
+  } catch (_) {}
+  final service = NotificationService();
+  await service._storeNotificationFromRemoteMessage(message);
+}
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -14,7 +22,8 @@ class NotificationService {
   NotificationService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -65,7 +74,8 @@ class NotificationService {
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       print('User granted permission');
-    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.provisional) {
       print('User granted provisional permission');
     } else {
       print('User declined or has not accepted permission');
@@ -77,14 +87,15 @@ class NotificationService {
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
-    // Handle background messages
-    FirebaseMessaging.onBackgroundMessage(_handleBackgroundMessage);
+    // Register the top-level background handler
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     // Handle notification opened app
     FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationOpenedApp);
 
     // Handle notification when app is terminated
-    RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
+    RemoteMessage? initialMessage =
+        await _firebaseMessaging.getInitialMessage();
     if (initialMessage != null) {
       _handleNotificationOpenedApp(initialMessage);
     }
@@ -93,7 +104,7 @@ class NotificationService {
     _firebaseMessaging.onTokenRefresh.listen(_updateUserToken);
   }
 
-  // Update FCM token in Firestore
+  // Update FCM token in Firestore (use merge to avoid failures)
   Future<void> _updateFCMToken() async {
     try {
       final User? user = _auth.currentUser;
@@ -101,10 +112,10 @@ class NotificationService {
 
       final String? token = await _firebaseMessaging.getToken();
       if (token != null) {
-        await _firestore.collection('users').doc(user.uid).update({
+        await _firestore.collection('users').doc(user.uid).set({
           'fcmToken': token,
           'lastTokenUpdate': FieldValue.serverTimestamp(),
-        });
+        }, SetOptions(merge: true));
         print('FCM token updated: $token');
       }
     } catch (e) {
@@ -112,16 +123,16 @@ class NotificationService {
     }
   }
 
-  // Update user token when it refreshes
+  // Update user token when it refreshes (use merge)
   Future<void> _updateUserToken(String token) async {
     try {
       final User? user = _auth.currentUser;
       if (user == null) return;
 
-      await _firestore.collection('users').doc(user.uid).update({
+      await _firestore.collection('users').doc(user.uid).set({
         'fcmToken': token,
         'lastTokenUpdate': FieldValue.serverTimestamp(),
-      });
+      }, SetOptions(merge: true));
       print('FCM token refreshed: $token');
     } catch (e) {
       print('Error refreshing FCM token: $e');
@@ -131,21 +142,12 @@ class NotificationService {
   // Handle foreground messages
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
     print('Handling a foreground message: ${message.messageId}');
-    
+
     // Show local notification for foreground messages
     await _showLocalNotification(message);
-    
+
     // Store notification in Firestore
     await _storeNotificationFromRemoteMessage(message);
-  }
-
-  // Handle background messages
-  static Future<void> _handleBackgroundMessage(RemoteMessage message) async {
-    print('Handling a background message: ${message.messageId}');
-    // Store notification in Firestore
-    // Note: This is a static method, so we need to create a new instance
-    final service = NotificationService();
-    await service._storeNotificationFromRemoteMessage(message);
   }
 
   // Handle notification opened app
@@ -195,25 +197,37 @@ class NotificationService {
   }
 
   // Store notification from remote message
-  Future<void> _storeNotificationFromRemoteMessage(RemoteMessage message) async {
+  // NOTE: This method is now background-safe and does not depend on Auth being available.
+  Future<void> _storeNotificationFromRemoteMessage(
+      RemoteMessage message) async {
     try {
-      final User? user = _auth.currentUser;
-      if (user == null) return;
+      // Use assignedTo from message data when present (server/cloud function should include it)
+      final String? assignedTo = message.data['assignedTo'] as String? ??
+          message.data['recipient'] as String? ??
+          message.data['userId'] as String?;
 
-      final notification = NotificationModel(
-        id: '', // Firestore will generate
-        title: message.notification?.title ?? 'New Notification',
-        message: message.notification?.body ?? '',
-        type: _getNotificationTypeFromData(message.data),
-        priority: _getNotificationPriorityFromData(message.data),
-        userId: user.uid,
-        reportId: message.data['reportId'],
-        createdAt: DateTime.now(),
-        isRead: false,
-        data: message.data,
-      );
+      if (assignedTo == null || assignedTo.isEmpty) {
+        // If there's no recipient/assignedTo in payload, we skip storing to avoid polluting notifications
+        print('Skipping storing notification: no assignedTo in message.data');
+        return;
+      }
 
-      await _firestore.collection(_notificationsCollection).add(notification.toFirestore());
+      // Build a Firestore map directly (avoid relying on FirebaseAuth in background)
+      final Map<String, dynamic> map = <String, dynamic>{
+        'title': message.notification?.title ?? 'New Notification',
+        'message': message.notification?.body ?? '',
+        'type': message.data['type'] ?? 'systemAnnouncement',
+        'priority': message.data['priority'] ?? 'normal',
+        'userId': message.data['userId'] ?? null,
+        'reportId': message.data['reportId'] ?? null,
+        'isRead': false,
+        'data': message.data,
+        'assignedTo': assignedTo,
+        'createdAt': FieldValue.serverTimestamp(),
+      };
+
+      await _firestore.collection(_notificationsCollection).add(map);
+      print('Notification stored for assignedTo=$assignedTo');
     } catch (e) {
       print('Error storing notification: $e');
     }
@@ -225,6 +239,7 @@ class NotificationService {
     required String message,
     required NotificationType type,
     required String userId,
+    required String assignedTo, // <- require assigned staff uid
     String? reportId,
     NotificationPriority priority = NotificationPriority.normal,
     Map<String, dynamic>? data,
@@ -238,19 +253,25 @@ class NotificationService {
         priority: priority,
         userId: userId,
         reportId: reportId,
+        assignedTo: assignedTo,
         createdAt: DateTime.now(),
         isRead: false,
         data: data,
       );
 
-      await _firestore.collection(_notificationsCollection).add(notification.toFirestore());
-      print('Notification created for user: $userId');
+      final Map<String, dynamic> map = notification.toFirestore();
+      map['assignedTo'] = assignedTo;
+      // Use server timestamp for createdAt (overwrite to keep consistency)
+      map['createdAt'] = FieldValue.serverTimestamp();
+
+      await _firestore.collection(_notificationsCollection).add(map);
+      print('Notification created for user: $userId assignedTo: $assignedTo');
     } catch (e) {
       print('Error creating notification: $e');
     }
   }
 
-  // Get notifications for current user
+  // Get notifications for current user (staff) => filter by assignedTo
   Stream<List<NotificationModel>> getUserNotifications() {
     final User? user = _auth.currentUser;
     if (user == null) {
@@ -259,7 +280,7 @@ class NotificationService {
 
     return _firestore
         .collection(_notificationsCollection)
-        .where('userId', isEqualTo: user.uid)
+        .where('assignedTo', isEqualTo: user.uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
@@ -267,42 +288,7 @@ class NotificationService {
             .toList());
   }
 
-  // Mark notification as read
-  Future<void> markAsRead(String notificationId) async {
-    try {
-      await _firestore
-          .collection(_notificationsCollection)
-          .doc(notificationId)
-          .update({'isRead': true});
-    } catch (e) {
-      print('Error marking notification as read: $e');
-    }
-  }
-
-  // Mark all notifications as read for current user
-  Future<void> markAllAsRead() async {
-    try {
-      final User? user = _auth.currentUser;
-      if (user == null) return;
-
-      final batch = _firestore.batch();
-      final unreadNotifications = await _firestore
-          .collection(_notificationsCollection)
-          .where('userId', isEqualTo: user.uid)
-          .where('isRead', isEqualTo: false)
-          .get();
-
-      for (var doc in unreadNotifications.docs) {
-        batch.update(doc.reference, {'isRead': true});
-      }
-
-      await batch.commit();
-    } catch (e) {
-      print('Error marking all notifications as read: $e');
-    }
-  }
-
-  // Get unread notification count
+  // Get unread notification count (staff) => filter by assignedTo
   Stream<int> getUnreadCount() {
     final User? user = _auth.currentUser;
     if (user == null) {
@@ -311,7 +297,7 @@ class NotificationService {
 
     return _firestore
         .collection(_notificationsCollection)
-        .where('userId', isEqualTo: user.uid)
+        .where('assignedTo', isEqualTo: user.uid)
         .where('isRead', isEqualTo: false)
         .snapshots()
         .map((snapshot) => snapshot.docs.length);
@@ -329,24 +315,42 @@ class NotificationService {
     }
   }
 
+  // Mark a single notification as read
+  Future<void> markAsRead(String notificationId) async {
+    try {
+      await _firestore
+          .collection(_notificationsCollection)
+          .doc(notificationId)
+          .update({
+        'isRead': true,
+      });
+    } catch (e) {
+      print('Error marking notification as read: $e');
+    }
+  }
+
+  // Mark all notifications for current user (assignedTo) as read
+  Future<void> markAllAsRead() async {
+    try {
+      final User? user = _auth.currentUser;
+      if (user == null) return;
+
+      final snapshot = await _firestore
+          .collection(_notificationsCollection)
+          .where('assignedTo', isEqualTo: user.uid)
+          .where('isRead', isEqualTo: false)
+          .get();
+
+      final batch = _firestore.batch();
+      for (var doc in snapshot.docs) {
+        batch.update(doc.reference, {'isRead': true});
+      }
+      await batch.commit();
+    } catch (e) {
+      print('Error marking all notifications as read: $e');
+    }
+  }
+
   // Helper methods
-  NotificationType _getNotificationTypeFromData(Map<String, dynamic> data) {
-    final String? typeString = data['type'];
-    if (typeString == null) return NotificationType.systemAnnouncement;
-
-    return NotificationType.values.firstWhere(
-      (e) => e.toString().split('.').last == typeString,
-      orElse: () => NotificationType.systemAnnouncement,
-    );
-  }
-
-  NotificationPriority _getNotificationPriorityFromData(Map<String, dynamic> data) {
-    final String? priorityString = data['priority'];
-    if (priorityString == null) return NotificationPriority.normal;
-
-    return NotificationPriority.values.firstWhere(
-      (e) => e.toString().split('.').last == priorityString,
-      orElse: () => NotificationPriority.normal,
-    );
-  }
+  // NOTE: parsing helpers removed (not used). If needed later, re-add.
 }
