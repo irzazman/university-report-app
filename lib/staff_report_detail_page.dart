@@ -26,8 +26,15 @@ class _StaffReportDetailPageState extends State<StaffReportDetailPage> {
   Widget build(BuildContext context) {
     final reportData = widget.reportData;
     final status = (reportData['status'] ?? 'Pending').toString();
-    final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
-    final bool isAssignedToUser = currentUserEmail == reportData['assignedTo'];
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final currentUserEmail = currentUser?.email;
+    final currentUserUid = currentUser?.uid;
+    final assignedToRaw = reportData['assignedTo'];
+    // assignedTo in Firestore may be stored as email or uid depending on server/client logic.
+    // Consider both when deciding whether this staff is assigned to the report.
+    final bool isAssignedToUser = assignedToRaw != null &&
+        (assignedToRaw.toString() == currentUserEmail ||
+            assignedToRaw.toString() == currentUserUid);
 
     IconData icon;
     Color iconColor;
@@ -108,10 +115,9 @@ class _StaffReportDetailPageState extends State<StaffReportDetailPage> {
                   ],
                 ),
                 child: ElevatedButton.icon(
-                  onPressed:
-                      () => _launchWhatsAppAlternative(
-                        reportData['reporterFullPhone'].toString(),
-                      ),
+                  onPressed: () => _launchWhatsAppAlternative(
+                    reportData['reporterFullPhone'].toString(),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
@@ -190,11 +196,10 @@ class _StaffReportDetailPageState extends State<StaffReportDetailPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed:
-                      () => _navigateToLocation(
-                        reportData['location']['latitude'],
-                        reportData['location']['longitude'],
-                      ),
+                  onPressed: () => _navigateToLocation(
+                    reportData['location']['latitude'],
+                    reportData['location']['longitude'],
+                  ),
                   icon: const Icon(Icons.navigation),
                   label: const Text('Navigate'),
                   style: ElevatedButton.styleFrom(
@@ -343,11 +348,10 @@ class _StaffReportDetailPageState extends State<StaffReportDetailPage> {
                           if (loadingProgress == null) return child;
                           return Center(
                             child: CircularProgressIndicator(
-                              value:
-                                  loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
                             ),
                           );
                         },
@@ -718,10 +722,9 @@ class _StaffReportDetailPageState extends State<StaffReportDetailPage> {
   }
 
   Future<void> _navigateToLocation(double latitude, double longitude) async {
-    final url =
-        Platform.isIOS
-            ? 'http://maps.apple.com/?daddr=$latitude,$longitude'
-            : 'geo:$latitude,$longitude?q=$latitude,$longitude';
+    final url = Platform.isIOS
+        ? 'http://maps.apple.com/?daddr=$latitude,$longitude'
+        : 'geo:$latitude,$longitude?q=$latitude,$longitude';
 
     try {
       if (await canLaunchUrl(Uri.parse(url))) {
@@ -748,38 +751,37 @@ class _StaffReportDetailPageState extends State<StaffReportDetailPage> {
   void _showAddNoteDialog() {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Staff Work Note'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Add details about work performed or parts needed',
-                  style: TextStyle(color: Colors.grey[700]),
-                ),
-                SizedBox(height: 16),
-                TextField(
-                  controller: noteController,
-                  decoration: InputDecoration(
-                    labelText: 'Work Note',
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 3,
-                ),
-              ],
+      builder: (context) => AlertDialog(
+        title: Text('Staff Work Note'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Add details about work performed or parts needed',
+              style: TextStyle(color: Colors.grey[700]),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Cancel'),
+            SizedBox(height: 16),
+            TextField(
+              controller: noteController,
+              decoration: InputDecoration(
+                labelText: 'Work Note',
+                border: OutlineInputBorder(),
               ),
-              ElevatedButton(
-                onPressed: _saveWorkNote,
-                child: Text('Save Note'),
-              ),
-            ],
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
           ),
+          ElevatedButton(
+            onPressed: _saveWorkNote,
+            child: Text('Save Note'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -799,14 +801,14 @@ class _StaffReportDetailPageState extends State<StaffReportDetailPage> {
           .collection('reports')
           .doc(reportId)
           .update({
-            'staffNotes': FieldValue.arrayUnion([
-              {
-                'note': noteController.text.trim(),
-                'timestamp': Timestamp.now(),
-                'staffEmail': FirebaseAuth.instance.currentUser?.email,
-              },
-            ]),
-          });
+        'staffNotes': FieldValue.arrayUnion([
+          {
+            'note': noteController.text.trim(),
+            'timestamp': Timestamp.now(),
+            'staffEmail': FirebaseAuth.instance.currentUser?.email,
+          },
+        ]),
+      });
 
       noteController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -856,24 +858,23 @@ class _StaffReportDetailPageState extends State<StaffReportDetailPage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder:
-            (context) => AlertDialog(
-              content: Row(
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(width: 16),
-                  Text('Submitting resolution...'),
-                ],
-              ),
-            ),
+        builder: (context) => AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Submitting resolution...'),
+            ],
+          ),
+        ),
       );
 
       final reportId = widget.reportData['reportId'];
       final fileName =
           'resolution_${reportId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final storageRef = FirebaseStorage.instance.ref().child(
-        'resolutions/$fileName',
-      );
+            'resolutions/$fileName',
+          );
 
       final uploadTask = storageRef.putFile(resolutionImage!);
       await uploadTask.whenComplete(() {});
@@ -883,12 +884,12 @@ class _StaffReportDetailPageState extends State<StaffReportDetailPage> {
           .collection('reports')
           .doc(reportId)
           .update({
-            'status': 'Pending Review',
-            'resolutionImage': imageUrl,
-            'resolutionNote': noteController.text.trim(),
-            'resolutionTimestamp': FieldValue.serverTimestamp(),
-            'resolvedBy': FirebaseAuth.instance.currentUser?.email,
-          });
+        'status': 'Pending Review',
+        'resolutionImage': imageUrl,
+        'resolutionNote': noteController.text.trim(),
+        'resolutionTimestamp': FieldValue.serverTimestamp(),
+        'resolvedBy': FirebaseAuth.instance.currentUser?.email,
+      });
 
       Navigator.pop(context); // Close loading dialog
 
