@@ -17,7 +17,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final phoneController = TextEditingController();
-  UserRole selectedRole = UserRole.student;
+  // Role selection removed: new users are always created with the Student role.
   bool isLoading = false;
   String selectedCountryCode = '+60';
   String selectedCountryDialCode = 'MY';
@@ -180,8 +180,9 @@ class _RegisterPageState extends State<RegisterPage> {
         password: password,
       );
 
+      // Always set role to student. Staff accounts are created from the web dashboard by admins.
       await UserService.setUserRoleWithPhone(
-        selectedRole,
+        UserRole.student,
         phone,
         selectedCountryCode,
       );
@@ -760,138 +761,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     const SizedBox(height: 20),
 
-                    // Role selection
-                    Text(
-                      'User Role',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.grey.shade300,
-                          width: 1,
-                        ),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<UserRole>(
-                          isExpanded: true,
-                          value: selectedRole,
-                          icon: const Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            color: Color(0xFF0070F0),
-                            size: 24,
-                          ),
-                          items: [
-                            DropdownMenuItem(
-                              value: UserRole.student,
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: Color(
-                                        0xFF0070F0,
-                                      ).withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(
-                                      Icons.school_rounded,
-                                      color: Color(0xFF0070F0),
-                                      size: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'Student',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                          color: Color(0xFF1E293B),
-                                        ),
-                                      ),
-                                      Text(
-                                        'Report campus issues',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: UserRole.staff,
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: Color(
-                                        0xFF62BDD9,
-                                      ).withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(
-                                      Icons.work_rounded,
-                                      color: Color(0xFF62BDD9),
-                                      size: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'Staff',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                          color: Color(0xFF1E293B),
-                                        ),
-                                      ),
-                                      Text(
-                                        'Manage issues',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                          onChanged: (role) {
-                            if (role != null) {
-                              setState(() => selectedRole = role);
-                            }
-                          },
-                        ),
-                      ),
-                    ),
+                    // Role selection removed: new users are automatically Students.
 
                     const SizedBox(height: 32),
 

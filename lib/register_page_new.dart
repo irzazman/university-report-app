@@ -17,7 +17,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final phoneController = TextEditingController();
-  UserRole selectedRole = UserRole.student;
+  // Role selection removed: new users are always created with the Student role.
   bool isLoading = false;
   String selectedCountryCode = '+60';
   String selectedCountryDialCode = 'MY';
@@ -108,11 +108,10 @@ class _RegisterPageState extends State<RegisterPage> {
   ) async {
     try {
       final fullPhoneNumber = '$countryCode$phoneNumber';
-      final querySnapshot =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .where('phoneNumber', isEqualTo: fullPhoneNumber)
-              .get();
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('phoneNumber', isEqualTo: fullPhoneNumber)
+          .get();
       return querySnapshot.docs.isEmpty;
     } catch (e) {
       print("Error checking phone number uniqueness: $e");
@@ -175,8 +174,9 @@ class _RegisterPageState extends State<RegisterPage> {
         password: password,
       );
 
+      // Always set role to student. Staff accounts are created from the web dashboard by admins.
       await UserService.setUserRoleWithPhone(
-        selectedRole,
+        UserRole.student,
         phone,
         selectedCountryCode,
       );
@@ -347,10 +347,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color:
-                              showEmailError
-                                  ? Colors.red.shade300
-                                  : emailValid
+                          color: showEmailError
+                              ? Colors.red.shade300
+                              : emailValid
                                   ? Colors.green.shade300
                                   : Colors.grey.shade300,
                           width: 1,
@@ -371,10 +370,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             padding: const EdgeInsets.only(left: 16, right: 12),
                             child: Icon(
                               Icons.email_rounded,
-                              color:
-                                  showEmailError
-                                      ? Colors.red.shade400
-                                      : emailValid
+                              color: showEmailError
+                                  ? Colors.red.shade400
+                                  : emailValid
                                       ? Colors.green.shade400
                                       : Color(0xFF0070F0),
                               size: 22,
@@ -384,32 +382,30 @@ class _RegisterPageState extends State<RegisterPage> {
                             minWidth: 50,
                             maxWidth: 50,
                           ),
-                          suffixIcon:
-                              emailController.text.isNotEmpty
-                                  ? Container(
-                                    width: 24,
-                                    height: 24,
-                                    margin: EdgeInsets.only(right: 16),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color:
-                                          emailValid
-                                              ? Colors.green.shade400
-                                              : showEmailError
-                                              ? Colors.red.shade400
-                                              : Colors.transparent,
-                                    ),
-                                    child: Icon(
-                                      emailValid
-                                          ? Icons.check
-                                          : showEmailError
-                                          ? Icons.close
-                                          : null,
-                                      color: Colors.white,
-                                      size: 14,
-                                    ),
-                                  )
-                                  : null,
+                          suffixIcon: emailController.text.isNotEmpty
+                              ? Container(
+                                  width: 24,
+                                  height: 24,
+                                  margin: EdgeInsets.only(right: 16),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: emailValid
+                                        ? Colors.green.shade400
+                                        : showEmailError
+                                            ? Colors.red.shade400
+                                            : Colors.transparent,
+                                  ),
+                                  child: Icon(
+                                    emailValid
+                                        ? Icons.check
+                                        : showEmailError
+                                            ? Icons.close
+                                            : null,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                )
+                              : null,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
@@ -465,10 +461,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color:
-                              showPasswordError
-                                  ? Colors.red.shade300
-                                  : passwordValid
+                          color: showPasswordError
+                              ? Colors.red.shade300
+                              : passwordValid
                                   ? Colors.green.shade300
                                   : Colors.grey.shade300,
                           width: 1,
@@ -489,10 +484,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             padding: const EdgeInsets.only(left: 16, right: 12),
                             child: Icon(
                               Icons.lock_rounded,
-                              color:
-                                  showPasswordError
-                                      ? Colors.red.shade400
-                                      : passwordValid
+                              color: showPasswordError
+                                  ? Colors.red.shade400
+                                  : passwordValid
                                       ? Colors.green.shade400
                                       : Color(0xFF0070F0),
                               size: 22,
@@ -502,32 +496,30 @@ class _RegisterPageState extends State<RegisterPage> {
                             minWidth: 50,
                             maxWidth: 50,
                           ),
-                          suffixIcon:
-                              passwordController.text.isNotEmpty
-                                  ? Container(
-                                    width: 24,
-                                    height: 24,
-                                    margin: EdgeInsets.only(right: 16),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color:
-                                          passwordValid
-                                              ? Colors.green.shade400
-                                              : showPasswordError
-                                              ? Colors.red.shade400
-                                              : Colors.transparent,
-                                    ),
-                                    child: Icon(
-                                      passwordValid
-                                          ? Icons.check
-                                          : showPasswordError
-                                          ? Icons.close
-                                          : null,
-                                      color: Colors.white,
-                                      size: 14,
-                                    ),
-                                  )
-                                  : null,
+                          suffixIcon: passwordController.text.isNotEmpty
+                              ? Container(
+                                  width: 24,
+                                  height: 24,
+                                  margin: EdgeInsets.only(right: 16),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: passwordValid
+                                        ? Colors.green.shade400
+                                        : showPasswordError
+                                            ? Colors.red.shade400
+                                            : Colors.transparent,
+                                  ),
+                                  child: Icon(
+                                    passwordValid
+                                        ? Icons.check
+                                        : showPasswordError
+                                            ? Icons.close
+                                            : null,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                )
+                              : null,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
@@ -583,10 +575,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color:
-                              showPhoneError
-                                  ? Colors.red.shade300
-                                  : phoneValid
+                          color: showPhoneError
+                              ? Colors.red.shade300
+                              : phoneValid
                                   ? Colors.green.shade300
                                   : Colors.grey.shade300,
                           width: 1,
@@ -696,32 +687,30 @@ class _RegisterPageState extends State<RegisterPage> {
                                     color: Colors.grey.shade500,
                                     fontSize: 15,
                                   ),
-                                  suffixIcon:
-                                      phoneController.text.isNotEmpty
-                                          ? Container(
-                                            width: 24,
-                                            height: 24,
-                                            margin: EdgeInsets.only(right: 8),
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color:
-                                                  phoneValid
-                                                      ? Colors.green.shade400
-                                                      : showPhoneError
-                                                      ? Colors.red.shade400
-                                                      : Colors.transparent,
-                                            ),
-                                            child: Icon(
-                                              phoneValid
-                                                  ? Icons.check
-                                                  : showPhoneError
-                                                  ? Icons.close
-                                                  : null,
-                                              color: Colors.white,
-                                              size: 14,
-                                            ),
-                                          )
-                                          : null,
+                                  suffixIcon: phoneController.text.isNotEmpty
+                                      ? Container(
+                                          width: 24,
+                                          height: 24,
+                                          margin: EdgeInsets.only(right: 8),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: phoneValid
+                                                ? Colors.green.shade400
+                                                : showPhoneError
+                                                    ? Colors.red.shade400
+                                                    : Colors.transparent,
+                                          ),
+                                          child: Icon(
+                                            phoneValid
+                                                ? Icons.check
+                                                : showPhoneError
+                                                    ? Icons.close
+                                                    : null,
+                                            color: Colors.white,
+                                            size: 14,
+                                          ),
+                                        )
+                                      : null,
                                   border: InputBorder.none,
                                   enabledBorder: InputBorder.none,
                                   focusedBorder: InputBorder.none,
@@ -766,138 +755,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     const SizedBox(height: 20),
 
-                    // Role selection
-                    Text(
-                      'User Role',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.grey.shade300,
-                          width: 1,
-                        ),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<UserRole>(
-                          isExpanded: true,
-                          value: selectedRole,
-                          icon: const Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            color: Color(0xFF0070F0),
-                            size: 24,
-                          ),
-                          items: [
-                            DropdownMenuItem(
-                              value: UserRole.student,
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: Color(
-                                        0xFF0070F0,
-                                      ).withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(
-                                      Icons.school_rounded,
-                                      color: Color(0xFF0070F0),
-                                      size: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'Student',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                          color: Color(0xFF1E293B),
-                                        ),
-                                      ),
-                                      Text(
-                                        'Report campus issues',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: UserRole.staff,
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: Color(
-                                        0xFF62BDD9,
-                                      ).withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(
-                                      Icons.work_rounded,
-                                      color: Color(0xFF62BDD9),
-                                      size: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'Staff',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                          color: Color(0xFF1E293B),
-                                        ),
-                                      ),
-                                      Text(
-                                        'Manage issues',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                          onChanged: (role) {
-                            if (role != null) {
-                              setState(() => selectedRole = role);
-                            }
-                          },
-                        ),
-                      ),
-                    ),
+                    // Role selection removed: new users are automatically Students.
 
                     const SizedBox(height: 32),
 
@@ -906,25 +764,23 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         gradient: LinearGradient(
-                          colors:
-                              isLoading
-                                  ? [Colors.grey.shade300, Colors.grey.shade400]
-                                  : [Color(0xFF0070F0), Color(0xFF0052CC)],
+                          colors: isLoading
+                              ? [Colors.grey.shade300, Colors.grey.shade400]
+                              : [Color(0xFF0070F0), Color(0xFF0052CC)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        boxShadow:
-                            isLoading
-                                ? []
-                                : [
-                                  BoxShadow(
-                                    color: Color(
-                                      0xFF0070F0,
-                                    ).withValues(alpha: 0.3),
-                                    blurRadius: 20,
-                                    offset: Offset(0, 8),
-                                  ),
-                                ],
+                        boxShadow: isLoading
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: Color(
+                                    0xFF0070F0,
+                                  ).withValues(alpha: 0.3),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
                       ),
                       width: double.infinity,
                       height: 56,
@@ -940,43 +796,42 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           disabledBackgroundColor: Colors.transparent,
                         ),
-                        child:
-                            isLoading
-                                ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2.5,
-                                      ),
+                        child: isLoading
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
                                     ),
-                                    SizedBox(width: 12),
-                                    Text(
-                                      'Creating Account...',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Text(
+                                    'Creating Account...',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                  ],
-                                )
-                                : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.person_add_rounded, size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Create Account',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.person_add_rounded, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Create Account',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                   ],
